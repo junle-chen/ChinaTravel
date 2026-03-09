@@ -95,19 +95,36 @@ def save_json_file(json_data, file_path):
 
 def load_query(args):
     
-    if not args.splits in ["easy", "medium", "human", "preference_base50",
+    is_hf_split = args.splits in ["easy", "medium", "human", "preference_base50",
                            "preference0_base50", "preference1_base50", "preference2_base50",
-                           "preference3_base50", "preference4_base50", "preference5_base50"]:
+                           "preference3_base50", "preference4_base50", "preference5_base50"]
+    is_human_subset = args.splits.startswith("human_")
+    
+    if not (is_hf_split or is_human_subset):
         return load_query_local(args)
+        
     config_name = "default"
+    hf_split_name = args.splits
+    if is_human_subset:
+        hf_split_name = "human"
+        
     if args.splits in ["preference0_base50", "preference1_base50", "preference2_base50",
                        "preference3_base50", "preference4_base50", "preference5_base50"]:
         config_name = "preference"
-    # elif args.splits in ["human"]:
-    #     config_name = "validation"
-    # elif args.splits in ["human1000"]:
-    #     config_name = "test"
-    query_data = hg_load_dataset("LAMDA-NeSy/ChinaTravel", name=config_name)[args.splits].to_list()
+
+    query_data = hg_load_dataset("LAMDA-NeSy/ChinaTravel", name=config_name)[hf_split_name].to_list()
+    
+    if is_human_subset:
+        split_config_file = os.path.join(
+            project_root_path,
+            "chinatravel",
+            "evaluation",
+            "default_splits",
+            "{}.txt".format(args.splits),
+        )
+        with open(split_config_file, "r") as f:
+            target_ids = [line.strip() for line in f.readlines()]
+        query_data = [d for d in query_data if d["uid"] in target_ids]
     
 
     for data_i in query_data:

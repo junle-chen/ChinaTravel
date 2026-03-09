@@ -9,3 +9,8 @@ eval_1000.sh
 human150.sh
 results.md
 your_tpc_scores.json
+.env
+database/
+logs
+database.zip
+

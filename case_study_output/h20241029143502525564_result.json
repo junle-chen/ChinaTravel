@@ -1,0 +1,425 @@
+{
+    "people_number": 3,
+    "start_city": "深圳",
+    "target_city": "重庆",
+    "itinerary": [
+        {
+            "day": 1,
+            "activities": [
+                {
+                    "start_time": "09:48",
+                    "end_time": "09:15",
+                    "start": "深圳站",
+                    "end": "重庆北站",
+                    "price": 432.71,
+                    "cost": 1298.1299999999999,
+                    "tickets": 3,
+                    "transports": [],
+                    "TrainID": "K487",
+                    "type": "train"
+                },
+                {
+                    "position": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                    "type": "accommodation",
+                    "price": 124,
+                    "cost": 372,
+                    "start_time": "09:34",
+                    "end_time": "24:00",
+                    "transports": [
+                        {
+                            "start": "重庆北站",
+                            "end": "重庆北站南广场-地铁站",
+                            "mode": "walk",
+                            "start_time": "09:15",
+                            "end_time": "09:18",
+                            "cost": 0,
+                            "distance": 0.27,
+                            "price": 0
+                        },
+                        {
+                            "start": "重庆北站南广场-地铁站",
+                            "end": "牛角沱-地铁站",
+                            "mode": "metro",
+                            "start_time": "09:18",
+                            "end_time": "09:28",
+                            "cost": 9,
+                            "distance": 5.14,
+                            "price": 3,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "牛角沱-地铁站",
+                            "end": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                            "mode": "walk",
+                            "start_time": "09:28",
+                            "end_time": "09:34",
+                            "cost": 0,
+                            "distance": 0.56,
+                            "price": 0
+                        }
+                    ],
+                    "room_type": 1,
+                    "rooms": 3
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "activities": [
+                {
+                    "position": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                    "type": "breakfast",
+                    "price": 0,
+                    "cost": 0,
+                    "start_time": "08:00",
+                    "end_time": "08:30",
+                    "transports": []
+                },
+                {
+                    "position": "长江索道",
+                    "type": "attraction",
+                    "price": 20,
+                    "cost": 60,
+                    "start_time": "08:47",
+                    "end_time": "10:17",
+                    "transports": [
+                        {
+                            "start": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                            "end": "牛角沱-地铁站",
+                            "mode": "walk",
+                            "start_time": "08:30",
+                            "end_time": "08:36",
+                            "cost": 0,
+                            "distance": 0.56,
+                            "price": 0
+                        },
+                        {
+                            "start": "牛角沱-地铁站",
+                            "end": "朝天门-地铁站",
+                            "mode": "metro",
+                            "start_time": "08:36",
+                            "end_time": "08:44",
+                            "cost": 9,
+                            "distance": 4.38,
+                            "price": 3,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "朝天门-地铁站",
+                            "end": "长江索道",
+                            "mode": "walk",
+                            "start_time": "08:44",
+                            "end_time": "08:47",
+                            "cost": 0,
+                            "distance": 0.33,
+                            "price": 0
+                        }
+                    ],
+                    "tickets": 3
+                },
+                {
+                    "position": "Gray Whale灰鲸餐厅(国金店)",
+                    "type": "lunch",
+                    "price": 153,
+                    "cost": 459,
+                    "start_time": "11:30",
+                    "end_time": "12:30",
+                    "transports": [
+                        {
+                            "start": "长江索道",
+                            "end": "朝天门-地铁站",
+                            "mode": "walk",
+                            "start_time": "10:17",
+                            "end_time": "10:20",
+                            "cost": 0,
+                            "distance": 0.33,
+                            "price": 0
+                        },
+                        {
+                            "start": "朝天门-地铁站",
+                            "end": "江北城-地铁站",
+                            "mode": "metro",
+                            "start_time": "10:20",
+                            "end_time": "10:23",
+                            "cost": 6,
+                            "distance": 1.82,
+                            "price": 2,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "江北城-地铁站",
+                            "end": "Gray Whale灰鲸餐厅(国金店)",
+                            "mode": "walk",
+                            "start_time": "10:23",
+                            "end_time": "10:24",
+                            "cost": 0,
+                            "distance": 0.11,
+                            "price": 0
+                        }
+                    ]
+                },
+                {
+                    "position": "磁器口古镇",
+                    "type": "attraction",
+                    "price": 0,
+                    "cost": 0,
+                    "start_time": "13:09",
+                    "end_time": "14:39",
+                    "transports": [
+                        {
+                            "start": "Gray Whale灰鲸餐厅(国金店)",
+                            "end": "江北城-地铁站",
+                            "mode": "walk",
+                            "start_time": "12:30",
+                            "end_time": "12:31",
+                            "cost": 0,
+                            "distance": 0.11,
+                            "price": 0
+                        },
+                        {
+                            "start": "江北城-地铁站",
+                            "end": "石井坡-地铁站",
+                            "mode": "metro",
+                            "start_time": "12:31",
+                            "end_time": "12:55",
+                            "cost": 12,
+                            "distance": 12.47,
+                            "price": 4,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "石井坡-地铁站",
+                            "end": "磁器口古镇",
+                            "mode": "walk",
+                            "start_time": "12:55",
+                            "end_time": "13:09",
+                            "cost": 0,
+                            "distance": 1.19,
+                            "price": 0
+                        }
+                    ],
+                    "tickets": 3
+                },
+                {
+                    "position": "山城老冰粉(女人广场店)",
+                    "type": "dinner",
+                    "price": 11,
+                    "cost": 33,
+                    "start_time": "17:00",
+                    "end_time": "18:00",
+                    "transports": [
+                        {
+                            "start": "磁器口古镇",
+                            "end": "石井坡-地铁站",
+                            "mode": "walk",
+                            "start_time": "14:39",
+                            "end_time": "14:53",
+                            "cost": 0,
+                            "distance": 1.19,
+                            "price": 0
+                        },
+                        {
+                            "start": "石井坡-地铁站",
+                            "end": "临江门-地铁站",
+                            "mode": "metro",
+                            "start_time": "14:53",
+                            "end_time": "15:19",
+                            "cost": 12,
+                            "distance": 13.06,
+                            "price": 4,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "临江门-地铁站",
+                            "end": "山城老冰粉(女人广场店)",
+                            "mode": "walk",
+                            "start_time": "15:19",
+                            "end_time": "15:21",
+                            "cost": 0,
+                            "distance": 0.24,
+                            "price": 0
+                        }
+                    ]
+                },
+                {
+                    "position": "解放碑步行街",
+                    "type": "attraction",
+                    "price": 0,
+                    "cost": 0,
+                    "start_time": "18:07",
+                    "end_time": "19:37",
+                    "transports": [
+                        {
+                            "start": "山城老冰粉(女人广场店)",
+                            "end": "临江门-地铁站",
+                            "mode": "walk",
+                            "start_time": "18:00",
+                            "end_time": "18:02",
+                            "cost": 0,
+                            "distance": 0.24,
+                            "price": 0
+                        },
+                        {
+                            "start": "临江门-地铁站",
+                            "end": "小什字-地铁站",
+                            "mode": "metro",
+                            "start_time": "18:02",
+                            "end_time": "18:03",
+                            "cost": 6,
+                            "distance": 0.93,
+                            "price": 2,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "小什字-地铁站",
+                            "end": "解放碑步行街",
+                            "mode": "walk",
+                            "start_time": "18:03",
+                            "end_time": "18:07",
+                            "cost": 0,
+                            "distance": 0.39,
+                            "price": 0
+                        }
+                    ],
+                    "tickets": 3
+                },
+                {
+                    "position": "李子坝轻轨站",
+                    "type": "attraction",
+                    "price": 0,
+                    "cost": 0,
+                    "start_time": "19:50",
+                    "end_time": "21:20",
+                    "transports": [
+                        {
+                            "start": "解放碑步行街",
+                            "end": "小什字-地铁站",
+                            "mode": "walk",
+                            "start_time": "19:37",
+                            "end_time": "19:41",
+                            "cost": 0,
+                            "distance": 0.39,
+                            "price": 0
+                        },
+                        {
+                            "start": "小什字-地铁站",
+                            "end": "牛角沱-地铁站",
+                            "mode": "metro",
+                            "start_time": "19:41",
+                            "end_time": "19:48",
+                            "cost": 6,
+                            "distance": 3.97,
+                            "price": 2,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "牛角沱-地铁站",
+                            "end": "李子坝轻轨站",
+                            "mode": "walk",
+                            "start_time": "19:48",
+                            "end_time": "19:50",
+                            "cost": 0,
+                            "distance": 0.24,
+                            "price": 0
+                        }
+                    ],
+                    "tickets": 3
+                },
+                {
+                    "position": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                    "type": "accommodation",
+                    "price": 124,
+                    "cost": 372,
+                    "start_time": "21:20",
+                    "end_time": "24:00",
+                    "transports": [
+                        {
+                            "start": "李子坝轻轨站",
+                            "end": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                            "mode": "taxi",
+                            "start_time": "21:20",
+                            "end_time": "21:20",
+                            "cost": 11.0,
+                            "distance": 0.36,
+                            "price": 11.0,
+                            "cars": 1
+                        }
+                    ],
+                    "room_type": 1,
+                    "rooms": 3
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "activities": [
+                {
+                    "position": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                    "type": "breakfast",
+                    "price": 0,
+                    "cost": 0,
+                    "start_time": "08:00",
+                    "end_time": "08:30",
+                    "transports": []
+                },
+                {
+                    "start_time": "11:00",
+                    "end_time": "10:12",
+                    "start": "重庆北站",
+                    "end": "深圳东站",
+                    "price": 432.71,
+                    "cost": 1298.1299999999999,
+                    "tickets": 3,
+                    "transports": [
+                        {
+                            "start": "7天优品Premium酒店(重庆上清寺牛角沱地铁站店)",
+                            "end": "牛角沱-地铁站",
+                            "mode": "walk",
+                            "start_time": "08:30",
+                            "end_time": "08:36",
+                            "cost": 0,
+                            "distance": 0.56,
+                            "price": 0
+                        },
+                        {
+                            "start": "牛角沱-地铁站",
+                            "end": "重庆北站南广场-地铁站",
+                            "mode": "metro",
+                            "start_time": "08:36",
+                            "end_time": "08:46",
+                            "cost": 9,
+                            "distance": 5.14,
+                            "price": 3,
+                            "tickets": 3
+                        },
+                        {
+                            "start": "重庆北站南广场-地铁站",
+                            "end": "重庆北站",
+                            "mode": "walk",
+                            "start_time": "08:46",
+                            "end_time": "08:49",
+                            "cost": 0,
+                            "distance": 0.27,
+                            "price": 0
+                        }
+                    ],
+                    "TrainID": "K355",
+                    "type": "train"
+                }
+            ]
+        }
+    ],
+    "search_time_sec": 154.8334460258484,
+    "llm_inference_time_sec": 147.9617178440094,
+    "input_token_count": 13500,
+    "output_token_count": 5085,
+    "input_token_maxx": 1274,
+    "llm_rec_count": 18,
+    "llm_rec_format_error_count": 4,
+    "search_nodes": 3405,
+    "backtrack_count": 920,
+    "constraints_validation_count": 1,
+    "commonsense_pass_count": 1,
+    "logical_pass_count": 1,
+    "all_constraints_pass": 1
+}

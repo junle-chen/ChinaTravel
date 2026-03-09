@@ -1,0 +1,42 @@
+UID: h20241029143709097610
+Target City: 杭州
+Total logic constraints: 9
+--- logic_0 ---
+intercity_transport_set=set()
+for activity in allactivities(plan):
+  if activity_type(activity) in ['train', 'airplane']: intercity_transport_set.add(intercity_transport_type(activity))
+result=({'train'}==intercity_transport_set)
+--- logic_1 ---
+total_cost=0 
+for activity in allactivities(plan):
+    total_cost+=activity_cost(activity)
+    total_cost += innercity_transport_cost(activity_transports(activity))
+result=(total_cost<=4000)
+--- logic_2 ---
+attraction_name_set=set()
+for activity in allactivities(plan):
+  if activity_type(activity)=='attraction': attraction_name_set.add(activity_position(activity))
+result=({'西湖风景名胜区'}<=attraction_name_set)
+--- logic_3 ---
+attraction_type_set=set()
+for activity in allactivities(plan):
+  if activity_type(activity)=='attraction': attraction_type_set.add(attraction_type(activity, target_city(plan)))
+result=({'博物馆/纪念馆','古风写真'}<=attraction_type_set)
+--- logic_4 ---
+restaurant_type_set=set()
+for activity in allactivities(plan):
+  if activity_type(activity) in ['breakfast', 'lunch', 'dinner']: restaurant_type_set.add(restaurant_type(activity, target_city(plan)))
+result=({'江浙菜'}<=restaurant_type_set)
+--- logic_5 ---
+accommodation_type_set=set()
+for activity in allactivities(plan):
+  if activity_type(activity) == 'accommodation': accommodation_type_set.add(accommodation_type(activity, target_city(plan)))
+result=({'位置超好'}<=accommodation_type_set)
+--- logic_6 ---
+result=(day_count(plan)==3)
+--- logic_7 ---
+result=(people_count(plan)==2)
+--- logic_8 ---
+result=True
+for activity in allactivities(plan):
+  if innercity_transport_type(activity_transports(activity))=='taxi'and taxi_cars(activity_transports(activity))!=1: result=False

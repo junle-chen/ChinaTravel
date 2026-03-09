@@ -496,7 +496,7 @@ def nl2sl_reflect(query, backbone_llm):
         "南京",
         "苏州",
     ]
-    if "target_city" in query and "start_city" in query:
+    if query.get("target_city") and query.get("start_city"):
         if query["target_city"] not in city_list or query["start_city"] not in city_list:
             query["hard_logic"] = []
             query["hard_logic_py"] = []

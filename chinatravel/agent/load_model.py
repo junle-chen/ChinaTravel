@@ -67,7 +67,7 @@ def init_agent(kwargs):
 
 
 def init_llm(llm_name, max_model_len=None):
-    from .llms import Deepseek, GPT4o, GLM4Plus, Qwen, Mistral, Llama, EmptyLLM
+    from .llms import Deepseek, GPT4o, GPT5_1, GLM4Plus, Qwen, Mistral, Llama, EmptyLLM, Gemini3FlashPreview
 
     from .tpc_agent.tpc_llm import TPCLLM
 
@@ -75,6 +75,10 @@ def init_llm(llm_name, max_model_len=None):
         llm = Deepseek()
     elif llm_name == "gpt-4o":
         llm = GPT4o()
+    elif llm_name in ["gpt-5.1", "gpt-5.1-chat"]:
+        llm = GPT5_1()
+    elif llm_name in ["gemini-3-flash-preview", "Gemini-3-Flash-Preview"]:
+        llm = Gemini3FlashPreview()
     elif llm_name == "glm4-plus":
         llm = GLM4Plus()
     elif "Qwen" in llm_name:

@@ -16,6 +16,9 @@ from chinatravel.data.load_datasets import load_query, save_json_file
 from chinatravel.agent.load_model import init_agent, init_llm
 from chinatravel.environment.world_env import WorldEnv
 
+# CUDA_VISIBLE_DEVICES
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 if __name__ == "__main__":
 
@@ -51,7 +54,12 @@ if __name__ == "__main__":
     parser.add_argument('--refine_steps', type=int, default=10, help='Steps for refine-based method, such as LLM-modulo, Reflection')
     
 
+    parser.add_argument('--gpu', type=str, default="0", help='CUDA_VISIBLE_DEVICES')
+    
     args = parser.parse_args()
+
+    # Set CUDA_VISIBLE_DEVICES based on arguments
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     print(args)
 
@@ -89,12 +97,8 @@ if __name__ == "__main__":
     print("res_dir: ", res_dir)
     print("log_dir:", log_dir)
 
-    if args.agent in ["LLM-modulo"]:
-        max_model_len = 65536
-    elif args.agent in ["LLMNeSy"]:
-        max_model_len = 8192
-    else:
-        max_model_len = None
+    # 上下文长度现在由 vLLM API Server 端控制，客户端只用于 input token 检查
+    max_model_len = 65536
     kwargs = {
         "method": args.agent,
         "env": WorldEnv(),
@@ -141,6 +145,8 @@ if __name__ == "__main__":
                     plan = json.loads(plan)
                 except:
                     plan = {"plan": plan}
+            if not isinstance(plan, dict):
+                plan = {"plan": plan}
             plan["input_token_count"] = agent.backbone_llm.input_token_count
             plan["output_token_count"] = agent.backbone_llm.output_token_count
             plan["input_token_maxx"] = agent.backbone_llm.input_token_maxx

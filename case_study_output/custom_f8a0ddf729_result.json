@@ -1,0 +1,16 @@
+{
+    "search_time_sec": 436.59239435195923,
+    "llm_inference_time_sec": 121.71037030220032,
+    "time_out_flag": true,
+    "input_token_count": 23786,
+    "output_token_count": 3467,
+    "input_token_maxx": 2904,
+    "llm_rec_count": 33,
+    "llm_rec_format_error_count": 2,
+    "search_nodes": 17884,
+    "backtrack_count": 9015,
+    "constraints_validation_count": 0,
+    "commonsense_pass_count": 0,
+    "logical_pass_count": 0,
+    "all_constraints_pass": 0
+}

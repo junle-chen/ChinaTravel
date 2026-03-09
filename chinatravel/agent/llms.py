@@ -7,7 +7,7 @@ from transformers import AutoConfig
 # from modelscope import AutoModelForCausalLM, AutoTokenizer
 import tiktoken
 
-from vllm import LLM, SamplingParams
+# from vllm import LLM, SamplingParams  # 已改用 API Server 模式，不再需要本地 vLLM
 import re
 import sys
 import os
@@ -70,8 +70,15 @@ class AbstractLLM(ABC):
 class Deepseek(AbstractLLM):
     def __init__(self):
         super().__init__()
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(project_root_path, ".env"))
+        
+        base_url = os.environ.get("OPENAI_BASE_URL", "https://api.deepseek.com")
+        api_key = os.environ.get("OPENAI_API_KEY", "EMPTY")
+
         self.llm = OpenAI(
-            base_url="https://api.deepseek.com",
+            base_url=base_url,
+            api_key=api_key
         )
         self.path = os.path.join(
             project_root_path, "chinatravel", "local_llm", "deepseek_v3_tokenizer"
@@ -207,52 +214,109 @@ class GPT4o(AbstractLLM):
         return res_str
 
 
+class GPT5_1(AbstractLLM):
+    def __init__(self):
+        super().__init__()
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(project_root_path, ".env"))
+        
+        base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        api_key = os.environ.get("OPENAI_API_KEY", "EMPTY")
+
+        self.llm = OpenAI(
+            base_url=base_url,
+            api_key=api_key
+        )
+        self.name = "GPT5.1"
+        self.tokenizer = tiktoken.encoding_for_model("gpt-4o") # update this to gpt-5.1 if available
+
+
+    def _send_request(self, messages, kwargs):
+
+        tokens = self.tokenizer.encode(chat_template(messages))
+        self.input_token_count += len(tokens)
+        self.input_token_maxx = max(self.input_token_maxx, len(tokens))
+
+        res_str = (
+            self.llm.chat.completions.create(messages=messages, **kwargs)
+            .choices[0]
+            .message.content
+        )
+        
+        tokens = self.tokenizer.encode(res_str)
+        self.output_token_count += len(tokens)
+
+        res_str = res_str.strip()
+        return res_str
+
+    def _get_response(self, messages, one_line, json_mode):
+        kwargs = {
+            "model": "gpt-5.1-chat",
+            "max_tokens": 4095,
+            "temperature": 0,
+        }
+        if one_line:
+            kwargs["stop"] = ["\n"]
+        elif json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        try:
+            res_str = self._send_request(messages, kwargs)
+            if json_mode:
+                res_str = repair_json(res_str, ensure_ascii=False)
+        except Exception as e:
+            print(e)
+            res_str = '{"error": "Request failed, please try again."}'
+        return res_str
+
+
 class Qwen(AbstractLLM):
     def __init__(self, model_name, max_model_len=None):
         super().__init__()
         self.path = os.path.join(
             project_root_path, "chinatravel", "local_llm", model_name
         )
-        os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1" 
-        if "Qwen3" in model_name:    
-            self.sampling_params = SamplingParams(temperature=0.6, top_p=0.95, top_k=20, max_tokens=4096)
-            
-        else:
-            self.sampling_params = SamplingParams(temperature=0, top_p=0.001, max_tokens=4096)
+        # os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1" 
+        # if "Qwen3" in model_name:    
+        #     self.sampling_params = SamplingParams(temperature=0.6, top_p=0.95, top_k=20, max_tokens=4096)
+        # else:
+        #     self.sampling_params = SamplingParams(temperature=0, top_p=0.001, max_tokens=4096)
 
-        if max_model_len is not None and max_model_len > 32768:
-            config = AutoConfig.from_pretrained(self.path)
-            config.rope_scaling = {
-                    "type": "yarn", 
-                    "factor": max_model_len//32768, # 2.0,  # 原长 32,768 → 扩展到 32,768 * 2 = 65536
-                    "original_max_position_embeddings": 32768
-                }
-            config.save_pretrained(self.path)
-            os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1"
-        else:
-            config = AutoConfig.from_pretrained(self.path)
-            if "rope_scaling" in config.to_dict():
-                del config.rope_scaling
-            config.save_pretrained(self.path)
+        # # 以下 rope_scaling 和 config 修改已不需要，上下文长度由 vLLM Server 端控制
+        # if max_model_len is not None and max_model_len > 32768:
+        #     config = AutoConfig.from_pretrained(self.path)
+        #     config.rope_scaling = {
+        #             "type": "yarn", 
+        #             "factor": max_model_len//32768,
+        #             "original_max_position_embeddings": 32768
+        #         }
+        #     config.save_pretrained(self.path)
+        #     os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1"
+        # else:
+        #     config = AutoConfig.from_pretrained(self.path)
+        #     if "rope_scaling" in config.to_dict():
+        #         del config.rope_scaling
+        #     config.save_pretrained(self.path)
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.path)
 
         if max_model_len is None:
             max_model_len = 32768
-            
-        self.llm = LLM(
-            model=self.path,
-            gpu_memory_utilization=0.95,
-            max_model_len=max_model_len,  # 强制上下文长度为 65536
-            # max_num_seqs = 1,           # Limit batch size
-            # tensor_parallel_size=2,     # GPUs=2
-            enable_prefix_caching=(max_model_len>=32768),  # 可选：启用前缀缓存优化长文本
-        )
+            # _gpu_mem_util = float(os.environ.get("VLLM_GPU_MEMORY_UTILIZATION", "0.95"))
+        # self.llm = LLM(
+        #     model=self.path,
+        #     gpu_memory_utilization=_gpu_mem_util,
+        #     max_model_len=max_model_len,  # 强制上下文长度为 65536
+        #     # max_num_seqs = 1,           # Limit batch size
+        #     # tensor_parallel_size=2,     # GPUs=2
+        #     enable_prefix_caching=(max_model_len>=32768),  # 可选：启用前缀缓存优化长文本
+        # )
+        base_url = os.environ.get("VLLM_API_BASE", "http://localhost:8000/v1")
+        self.llm = OpenAI(base_url=base_url, api_key="EMPTY")
 
         self.name = model_name
+        self.api_model_name = self.path  # vLLM server registers model by full path
         self.max_model_len = max_model_len
 
-        
 
     def _get_response(self, messages, one_line, json_mode):
         # print(messages)
@@ -273,16 +337,30 @@ class Qwen(AbstractLLM):
             
             if len(input_tokens) >= self.max_model_len:
                 return str({"error": f"Input prompt is longer than {self.max_model_len} tokens."})
-            # conduct text completion
-            outputs = self.llm.generate([text], self.sampling_params)
-
-
-            generated_text = outputs[0].outputs[0].text
-            # print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
-            # print(generated_text)
-
-            output_token_ids = outputs[0].outputs[0].token_ids
-            self.output_token_count += len(output_token_ids)
+            # # conduct text completion
+            # outputs = self.llm.generate([text], self.sampling_params)
+            #
+            # generated_text = outputs[0].outputs[0].text
+            # # print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
+            # # print(generated_text)
+            #
+            # output_token_ids = outputs[0].outputs[0].token_ids
+            # self.output_token_count += len(output_token_ids)
+            kwargs = {
+                "model": self.api_model_name,
+                "temperature": 0.6,
+                "top_p": 0.95,
+                "max_tokens": 4096,
+                "stop": ["<|im_end|>"]
+            }
+            try:
+                response = self.llm.chat.completions.create(messages=messages, **kwargs)
+                generated_text = response.choices[0].message.content
+                if hasattr(response, "usage") and response.usage:
+                    self.output_token_count += response.usage.completion_tokens
+            except Exception as e:
+                print(f"API Error: {e}")
+                generated_text = ""
 
             try:
                 m = re.match(r"<think>\n(.+)</think>\n\n", generated_text, flags=re.DOTALL)
@@ -308,11 +386,26 @@ class Qwen(AbstractLLM):
             if len(input_tokens) >= self.max_model_len:
                 return str({"error": f"Input prompt is longer than {self.max_model_len} tokens."})
 
-            outputs = self.llm.generate([text], self.sampling_params)
-            res_str = outputs[0].outputs[0].text
-
-            output_token_ids = outputs[0].outputs[0].token_ids
-            self.output_token_count += len(output_token_ids)
+            # outputs = self.llm.generate([text], self.sampling_params)
+            # res_str = outputs[0].outputs[0].text
+            # 
+            # output_token_ids = outputs[0].outputs[0].token_ids
+            # self.output_token_count += len(output_token_ids)
+            kwargs = {
+                "model": self.api_model_name,
+                "temperature": 0,
+                "top_p": 0.001,
+                "max_tokens": 4096,
+                "stop": ["<|im_end|>"]
+            }
+            try:
+                response = self.llm.chat.completions.create(messages=messages, **kwargs)
+                res_str = response.choices[0].message.content
+                if hasattr(response, "usage") and response.usage:
+                    self.output_token_count += response.usage.completion_tokens
+            except Exception as e:
+                print(f"API Error: {e}")
+                res_str = ""
         try:
             if json_mode:
                 res_str = repair_json(res_str, ensure_ascii=False)
@@ -332,39 +425,42 @@ class Mistral(AbstractLLM):
         self.path = os.path.join(
             project_root_path, "chinatravel", "local_llm", "Mistral-7B-Instruct-v0.3",
         )
-        self.sampling_params = SamplingParams(
-            temperature=0, top_p=0.001, max_tokens=4096
-        )
+        # self.sampling_params = SamplingParams(
+        #     temperature=0, top_p=0.001, max_tokens=4096
+        # )
 
-        if max_model_len is not None and max_model_len > 32768:
-            config = AutoConfig.from_pretrained(self.path)
-            config.rope_scaling = {
-                "type": "yarn", 
-                "factor": max_model_len // 32768,
-                "original_max_position_embeddings": 32768
-            }
-            config.save_pretrained(self.path)
-            os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1"
-        else:
-            config = AutoConfig.from_pretrained(self.path)
-            if "rope_scaling" in config.to_dict():
-                del config.rope_scaling
-            config.save_pretrained(self.path)
+        # if max_model_len is not None and max_model_len > 32768:
+        #     config = AutoConfig.from_pretrained(self.path)
+        #     config.rope_scaling = {
+        #         "type": "yarn", 
+        #         "factor": max_model_len // 32768,
+        #         "original_max_position_embeddings": 32768
+        #     }
+        #     config.save_pretrained(self.path)
+        #     os.environ["VLLM_ALLOW_LONG_MAX_MODEL_LEN"] = "1"
+        # else:
+        #     config = AutoConfig.from_pretrained(self.path)
+        #     if "rope_scaling" in config.to_dict():
+        #         del config.rope_scaling
+        #     config.save_pretrained(self.path)
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.path)
 
         if max_model_len is None:
             max_model_len = 32768
 
-        self.llm = LLM(
-            model=self.path,
-            gpu_memory_utilization=0.95,
-            max_model_len=max_model_len,
-            # max_num_seqs = 1,           # Limit batch size
-            # tensor_parallel_size=2,     # GPUs=2
-            enable_prefix_caching=(max_model_len>=32768),  # 可选：启用前缀缓存优化长文本
-        )
+        # self.llm = LLM(
+        #     model=self.path,
+        #     gpu_memory_utilization=0.95,
+        #     max_model_len=max_model_len,
+        #     # max_num_seqs = 1,           # Limit batch size
+        #     # tensor_parallel_size=2,     # GPUs=2
+        #     enable_prefix_caching=(max_model_len>=32768),  # 可选：启用前缀缓存优化长文本
+        # )
+        base_url = os.environ.get("VLLM_API_BASE", "http://localhost:8000/v1")
+        self.llm = OpenAI(base_url=base_url, api_key="EMPTY")
         self.name = "Mistral-7B-Instruct-v0.3"
+        self.api_model_name = self.path  # vLLM server registers model by full path
         self.max_model_len = max_model_len
 
     def _get_response(self, messages, one_line, json_mode):
@@ -380,12 +476,26 @@ class Mistral(AbstractLLM):
         if len(input_tokens) >= self.max_model_len:
             return str({"error": f"Input prompt is longer than {self.max_model_len} tokens."})
 
-        # try:
-        outputs = self.llm.generate([text], self.sampling_params)
-        res_str = outputs[0].outputs[0].text
-        
-        output_token_ids = outputs[0].outputs[0].token_ids
-        self.output_token_count += len(output_token_ids)
+        # # try:
+        # outputs = self.llm.generate([text], self.sampling_params)
+        # res_str = outputs[0].outputs[0].text
+        # 
+        # output_token_ids = outputs[0].outputs[0].token_ids
+        # self.output_token_count += len(output_token_ids)
+        kwargs = {
+            "model": self.api_model_name,
+            "temperature": 0,
+            "top_p": 0.001,
+            "max_tokens": 4096,
+        }
+        try:
+            response = self.llm.chat.completions.create(messages=messages, **kwargs)
+            res_str = response.choices[0].message.content
+            if hasattr(response, "usage") and response.usage:
+                self.output_token_count += response.usage.completion_tokens
+        except Exception as e:
+            print(f"API Error: {e}")
+            res_str = ""
         
         if json_mode:
             res_str = repair_json(res_str, ensure_ascii=False)
@@ -416,11 +526,14 @@ class Llama(AbstractLLM):
             )
         
         self.tokenizer = AutoTokenizer.from_pretrained(self.path, local_files_only=True)
-        self.sampling_params = SamplingParams(
-            temperature=0, top_p=0.001, max_tokens=4096
-        )
-        self.llm = LLM(model=self.path) #, local_files_only=True)
+        # self.sampling_params = SamplingParams(
+        #     temperature=0, top_p=0.001, max_tokens=4096
+        # )
+        # self.llm = LLM(model=self.path) #, local_files_only=True)
+        base_url = os.environ.get("VLLM_API_BASE", "http://localhost:8000/v1")
+        self.llm = OpenAI(base_url=base_url, api_key="EMPTY")
         self.name = model_name
+        self.api_model_name = self.path  # vLLM server registers model by full path
 
     def _get_response(self, messages, one_line, json_mode):
         # print(messages)
@@ -437,11 +550,21 @@ class Llama(AbstractLLM):
         
         
         try:
-            outputs = self.llm.generate([text], self.sampling_params)
-            res_str = outputs[0].outputs[0].text
-            
-            output_token_ids = outputs[0].outputs[0].token_ids
-            self.output_token_count += len(output_token_ids)
+            # outputs = self.llm.generate([text], self.sampling_params)
+            # res_str = outputs[0].outputs[0].text
+            # 
+            # output_token_ids = outputs[0].outputs[0].token_ids
+            # self.output_token_count += len(output_token_ids)
+            kwargs = {
+                "model": self.api_model_name,
+                "temperature": 0,
+                "top_p": 0.001,
+                "max_tokens": 4096,
+            }
+            response = self.llm.chat.completions.create(messages=messages, **kwargs)
+            res_str = response.choices[0].message.content
+            if hasattr(response, "usage") and response.usage:
+                self.output_token_count += response.usage.completion_tokens
 
             if json_mode:
                 res_str = repair_json(res_str, ensure_ascii=False)
@@ -454,6 +577,59 @@ class Llama(AbstractLLM):
         # print("---mistral_output_end---")
         print(res_str)
         return res_str
+
+class Gemini3FlashPreview(AbstractLLM):
+    def __init__(self):
+        super().__init__()
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(project_root_path, ".env"))
+        
+        base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        api_key = os.environ.get("OPENAI_API_KEY", "EMPTY")
+
+        self.llm = OpenAI(
+            base_url=base_url,
+            api_key=api_key
+        )
+        self.name = "gemini-3-flash-preview"
+        self.tokenizer = tiktoken.encoding_for_model("gpt-4o")
+
+    def _send_request(self, messages, kwargs):
+        tokens = self.tokenizer.encode(chat_template(messages))
+        self.input_token_count += len(tokens)
+        self.input_token_maxx = max(self.input_token_maxx, len(tokens))
+
+        res_str = (
+            self.llm.chat.completions.create(messages=messages, **kwargs)
+            .choices[0]
+            .message.content
+        )
+        
+        tokens = self.tokenizer.encode(res_str)
+        self.output_token_count += len(tokens)
+
+        res_str = res_str.strip()
+        return res_str
+
+    def _get_response(self, messages, one_line, json_mode):
+        kwargs = {
+            "model": "gemini-3-flash-preview",
+            "max_tokens": 4095,
+            "temperature": 0,
+        }
+        if one_line:
+            kwargs["stop"] = ["\n"]
+        elif json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        try:
+            res_str = self._send_request(messages, kwargs)
+            if json_mode:
+                res_str = repair_json(res_str, ensure_ascii=False)
+        except Exception as e:
+            print(e)
+            res_str = '{"error": "Request failed, please try again."}'
+        return res_str
+
 
 class EmptyLLM(AbstractLLM):
     def __init__(self):

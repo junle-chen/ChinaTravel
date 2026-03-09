@@ -1,0 +1,20 @@
+======================================================================
+  查询详情
+======================================================================
+
+  查询 ID:   h20241029143447759844
+  出发城市:  上海
+  目标城市:  苏州
+  天数:      3
+  人数:      2
+
+  [自然语言查询 (中文)]
+    [当前位置上海,目标位置苏州,旅行人数2,旅行天数3] 我要带着我大儿子从上海出发去苏州玩三天，要轻快自由行，不要特种兵出行。帮我规划一下。
+
+  [Natural Language Query (English)]
+    [Current location: Shanghai, Destination: Suzhou, Number of travelers: 2, Number of travel days: 3] I want to take my eldest son from Shanghai to Suzhou for a three-day trip. We want a light and free travel experience, not a rigorous one. Please help me plan it.
+
+  [其他参数]
+    limit_rooms:      False
+    limits_room_type: False
+    tag:              human

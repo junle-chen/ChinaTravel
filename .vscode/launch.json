@@ -1,0 +1,172 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ReAct + GPT-4o",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "ReAct",
+                "--llm",
+                "gpt-4o"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "ReAct0 (zero-shot) + GPT-4o",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "ReAct0",
+                "--llm",
+                "gpt-4o"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "Act + GPT-4o",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "Act",
+                "--llm",
+                "gpt-4o"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "LLMNeSy + GPT-4o",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "LLMNeSy",
+                "--llm",
+                "gpt-4o"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "RuleNeSy (rule-based)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "RuleNeSy",
+                "--llm",
+                "rule"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "LLM-modulo + GPT-4o",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "LLM-modulo",
+                "--llm",
+                "gpt-4o",
+                "--oracle_translation",
+                "--refine_steps",
+                "5"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "Debug Single Query (ReAct)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--agent",
+                "ReAct",
+                "--llm",
+                "gpt-4o",
+                "--index",
+                "h20241029143447759844"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "Eval Experiment",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_exp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--splits",
+                "human",
+                "--method",
+                "ReAct_gpt-4o"
+            ]
+        },
+        {
+            "name": "Analyze Human Failures",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/analyze_human_failures.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Single Query (LLMNeSy)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_single_query.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--agent",
+                "LLMNeSy",
+                "--llm",
+                "deepseek",
+                "--query_id",
+                "h20241029143447759844",
+                // "--oracle_translation"
+            ],
+        }
+    ]
+}

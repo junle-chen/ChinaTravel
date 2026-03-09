@@ -8,6 +8,25 @@ import sys
 import os
 import json
 
+class TeeLogger:
+    def __init__(self, filename, terminal):
+        self.terminal = terminal
+        self.log = open(filename, "w", encoding="utf-8")
+
+    def __getattr__(self, attr):
+        return getattr(self.terminal, attr)
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+    def close(self):
+        self.log.close()
+
 project_root_path = os.path.dirname(os.path.abspath(__file__))
 if project_root_path not in sys.path: sys.path.insert(0, project_root_path)
 
@@ -79,6 +98,7 @@ if __name__ == "__main__":
         "--method", "-m", type=str, default="example"
     )  # , choices=METHOD_LIST)
     parser.add_argument("--preference", "-p", action="store_true", default=False)
+    parser.add_argument('--oracle_translation', action='store_true', help='Set this flag to enable oracle translation.')
     args = parser.parse_args()
 
     # print(args.splits)
@@ -112,84 +132,93 @@ if __name__ == "__main__":
         print("There are {} results...".format(plan_count))
 
 
-        print("Method: {}".format(method))
-
         if not os.path.exists("eval_res/splits_{}/{}/".format(args.splits, method)):
             os.makedirs("eval_res/splits_{}/{}/".format(args.splits, method))
 
-        schema_rate, schema_result_agg, schema_pass_id = evaluate_schema_constraints(
-            query_index, result_data[method], schema=schema
-        )
-        res_file = "eval_res/splits_{}/{}/schema.csv".format(args.splits, method)
-        schema_result_agg.to_csv(res_file, index=False)
-        print("save to {}".format(res_file))
-        print("Schema Pass Rate:", schema_rate)
+        log_file = "eval_res/splits_{}/{}/log.txt".format(args.splits, method)
+        tee = TeeLogger(log_file, sys.__stdout__)
+        sys.stdout = tee
 
-        macro_comm, micro_comm, common_result_agg, commonsense_pass_id = evaluate_commonsense_constraints(
-            query_index, query_data, result_data[method], verbose=False
-        )
+        try:
+            print("Method: {}".format(method))
 
-        res_file = "eval_res/splits_{}/{}/commonsense.csv".format(args.splits, method)
-        common_result_agg.to_csv(res_file, index=False)
-        print("save to {}".format(res_file))
-
-        print("Commonsense constraints:")
-        print("micro accuracy: {}".format(micro_comm))
-        print("macro accuracy: {}".format(macro_comm))
-
-
-        # print("Logical constraints (flat version):")
-        # macro_logi, micro_logi, logi_result_agg, logi_pass_id_flat = evaluate_hard_constraints(
-        #     query_index, query_data, result_data[method], verbose=False
-        # )
-
-        # print("micro accuracy: {}".format(micro_logi))
-        # print("macro accuracy: {}".format(macro_logi))
-
-        # res_file = "eval_res/splits_{}/{}/logical.csv".format(args.splits, method)
-        # logi_result_agg.to_csv(res_file, index=False)
-        # print("save to {}".format(res_file))
-
-        print("Logical constraints (python version):")
-        macro_logi, micro_logi, conditional_macro_logi, conditional_micro_logi, logi_result_agg, logi_pass_id = evaluate_hard_constraints_v2(
-            query_index, query_data, result_data[method], env_pass_id=commonsense_pass_id, verbose=False
-        )
-
-
-        print("micro accuracy: {}".format(micro_logi))
-        print("macro accuracy: {}".format(macro_logi))
-
-        print("conditional micro accuracy: {}".format(conditional_micro_logi))
-        print("conditional macro accuracy: {}".format(conditional_macro_logi))
-
-
-        print("Conditional LPR: {}".format(conditional_micro_logi))
-
-        res_file = "eval_res/splits_{}/{}/logical_py.csv".format(args.splits, method)
-        logi_result_agg.to_csv(res_file, index=False)
-        print("save to {}".format(res_file))
-
-        # record the index of the queries that pass the logical constraints
-        logical_pass_info = logi_result_agg.iloc[:, 1:]
-        id_list = logi_result_agg.iloc[:, 0].tolist()
-
-        all_pass_id = list(set(schema_pass_id) & set(commonsense_pass_id) & set(logi_pass_id))
-
-
-
-        print("All pass ratio: ", 1. * len(all_pass_id) / len(query_index) * 100)
-        
-        if args.preference:
-            print("Preference:")
-            result_agg = evaluate_preference_v2(
-                query_index,
-                query_data,
-                result_data[method],
-                list(set(commonsense_pass_id) & set(logi_pass_id)),
+            schema_rate, schema_result_agg, schema_pass_id = evaluate_schema_constraints(
+                query_index, result_data[method], schema=schema
             )
-
-            res_file = "eval_res/splits_{}/{}/preference.csv".format(
-                args.splits, method
-            )
-            result_agg.to_csv(res_file, index=False)
+            res_file = "eval_res/splits_{}/{}/schema.csv".format(args.splits, method)
+            schema_result_agg.to_csv(res_file, index=False)
             print("save to {}".format(res_file))
+            print("Schema Pass Rate:", schema_rate)
+
+            macro_comm, micro_comm, common_result_agg, commonsense_pass_id = evaluate_commonsense_constraints(
+                query_index, query_data, result_data[method], verbose=False
+            )
+
+            res_file = "eval_res/splits_{}/{}/commonsense.csv".format(args.splits, method)
+            common_result_agg.to_csv(res_file, index=False)
+            print("save to {}".format(res_file))
+
+            print("Commonsense constraints:")
+            print("micro accuracy: {}".format(micro_comm))
+            print("macro accuracy: {}".format(macro_comm))
+
+
+            # print("Logical constraints (flat version):")
+            # macro_logi, micro_logi, logi_result_agg, logi_pass_id_flat = evaluate_hard_constraints(
+            #     query_index, query_data, result_data[method], verbose=False
+            # )
+
+            # print("micro accuracy: {}".format(micro_logi))
+            # print("macro accuracy: {}".format(macro_logi))
+
+            # res_file = "eval_res/splits_{}/{}/logical.csv".format(args.splits, method)
+            # logi_result_agg.to_csv(res_file, index=False)
+            # print("save to {}".format(res_file))
+
+            print("Logical constraints (python version):")
+            macro_logi, micro_logi, conditional_macro_logi, conditional_micro_logi, logi_result_agg, logi_pass_id = evaluate_hard_constraints_v2(
+                query_index, query_data, result_data[method], env_pass_id=commonsense_pass_id, verbose=False
+            )
+
+
+            print("micro accuracy: {}".format(micro_logi))
+            print("macro accuracy: {}".format(macro_logi))
+
+            print("conditional micro accuracy: {}".format(conditional_micro_logi))
+            print("conditional macro accuracy: {}".format(conditional_macro_logi))
+
+
+            print("Conditional LPR: {}".format(conditional_micro_logi))
+
+            res_file = "eval_res/splits_{}/{}/logical_py.csv".format(args.splits, method)
+            logi_result_agg.to_csv(res_file, index=False)
+            print("save to {}".format(res_file))
+
+            # record the index of the queries that pass the logical constraints
+            logical_pass_info = logi_result_agg.iloc[:, 1:]
+            id_list = logi_result_agg.iloc[:, 0].tolist()
+
+            all_pass_id = list(set(schema_pass_id) & set(commonsense_pass_id) & set(logi_pass_id))
+
+
+
+            print("All pass ratio: ", 1. * len(all_pass_id) / len(query_index) * 100)
+            
+            if args.preference:
+                print("Preference:")
+                result_agg = evaluate_preference_v2(
+                    query_index,
+                    query_data,
+                    result_data[method],
+                    list(set(commonsense_pass_id) & set(logi_pass_id)),
+                )
+
+                res_file = "eval_res/splits_{}/{}/preference.csv".format(
+                    args.splits, method
+                )
+                result_agg.to_csv(res_file, index=False)
+                print("save to {}".format(res_file))
+                
+        finally:
+            sys.stdout = sys.__stdout__
+            tee.close()

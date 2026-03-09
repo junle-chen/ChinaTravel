@@ -69,7 +69,20 @@ class NesyAgent(BaseAgent):
             os.makedirs(cache_dir)
         self.cache_dir = cache_dir
 
-        self.least_plan_schema, self.least_plan_comm = None, None
+        self.least_plan_schema, self.least_plan_comm, self.least_plan_logic = None, None, None
+        self.least_plan_logical_pass = -1
+
+        self.time_before_search = time.time()
+        self.llm_inference_time_count = 0
+        self.llm_rec_count = 0
+        self.llm_rec_format_error = 0
+        self.search_nodes = 0
+        self.backtrack_count = 0
+        self.constraints_validation_count = 0
+        self.commonsense_pass_count = 0
+        self.logical_pass_count = 0
+        self.all_constraints_pass = 0
+
         self.method = kwargs["method"]
 
         print("cache dir:", self.cache_dir)
